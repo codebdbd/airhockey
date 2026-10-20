@@ -63,8 +63,8 @@ html, body {
 
 .kbd {
   display: inline-flex; align-items: center; justify-content: center;
-  min-width: 1.7rem; height: 1.7rem; padding: 0 .4rem;
-  border-radius: .45rem; border: 1px solid #2b3d5c; border-bottom-width: 3px;
-  background: #0d1626; color: #bfe6ff; font-size: .75rem; font-weight: 700;
+  min-width: 1.45rem; height: 1.45rem; padding: 0 .35rem;
+  border-radius: .38rem; border: 1px solid #2b3d5c; border-bottom-width: 2px;
+  background: #0d1626; color: #bfe6ff; font-size: .7rem; font-weight: 700;
   font-family: var(--font-display);
 }
