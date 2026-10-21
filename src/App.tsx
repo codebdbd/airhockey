@@ -986,21 +986,6 @@ export default function App() {
                 >
                   <Play className="h-5 w-5 fill-slate-950 transition group-hover:scale-110" /> ИГРАТЬ
                 </button>
-                <p className="anim-blink-soft mt-2.5 text-[11px] font-bold tracking-[0.24em] text-slate-400">НАЖМИТЕ ПРОБЕЛ ИЛИ КНОПКУ</p>
-
-                <div className="mt-4 flex items-center gap-4 text-[11px] font-semibold text-slate-400">
-                  <span className="flex items-center gap-1.5"><MousePointer2 className="h-3.5 w-3.5 text-cyan-300" /> Мышь</span>
-                  <span className="flex items-center gap-1.5"><Hand className="h-3.5 w-3.5 text-cyan-300" /> Тачпад / Сенсор</span>
-                  <span className="flex items-center gap-1.5"><Keyboard className="h-3.5 w-3.5 text-cyan-300" /> WASD / Стрелки</span>
-                </div>
-                {scores.length > 0 && (
-                  <button onClick={() => setShowScoresMobile(v => !v)} className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-amber-300 lg:hidden">
-                    <Trophy className="h-3.5 w-3.5" /> {showScoresMobile ? "Скрыть" : "Показать"} историю матчей <ChevronRight className={`h-3.5 w-3.5 transition ${showScoresMobile ? "rotate-90" : ""}`} />
-                  </button>
-                )}
-                {showScoresMobile && scores.length > 0 && (
-                  <div className="mt-2 w-full max-w-[320px] lg:hidden"><ScoreTable scores={scores.slice(0, 5)} compact /></div>
-                )}
               </div>
             )}
 
@@ -1066,20 +1051,6 @@ export default function App() {
                 </div>
                 <p className="anim-blink-soft mt-3 text-[11px] font-bold tracking-[0.22em] text-slate-500">НАЖМИТЕ R ИЛИ ПРОБЕЛ ДЛЯ РЕВАНША</p>
               </div>
-            )}
-          </div>
-
-          {/* under-table quick actions */}
-          <div className="mt-2 flex items-center justify-between gap-2 px-1">
-            <p className="hidden items-center gap-1.5 text-xs font-semibold text-slate-500 sm:flex">
-              <span className="kbd">W</span><span className="kbd">A</span><span className="kbd">S</span><span className="kbd">D</span> ход
-              <span className="ml-1 kbd">P</span> пауза <span className="kbd">R</span> заново
-            </p>
-            <p className="text-xs font-semibold text-slate-500 sm:hidden">Ведите пальцем по столу для управления битой</p>
-            {screen === "playing" && (
-              <button onClick={() => startMatch()} className="flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-800 bg-[#0a1424] px-2.5 py-1.5 text-xs font-bold text-slate-300 transition hover:border-cyan-400/50 hover:text-cyan-300 active:scale-95">
-                <RotateCcw className="h-3.5 w-3.5" /> Заново
-              </button>
             )}
           </div>
         </section>
