@@ -3,6 +3,7 @@ import {
   Play, Pause, RotateCcw, Trophy, Volume2, VolumeX, Zap, Crown,
   MousePointer2, Keyboard, Hand, Timer, Target, Flame, Trash2,
   ChevronRight, Shield, Swords, Gauge, Medal, X, Maximize2, Minimize2,
+  HelpCircle,
 } from "lucide-react";
 
 /* ============================================================
@@ -154,6 +155,7 @@ export default function App() {
   const [scores, setScores] = useState<ScoreEntry[]>(loadScores);
   const [showScoresMobile, setShowScoresMobile] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showRulesModal, setShowRulesModal] = useState(false);
 
   const toggleFullscreen = useCallback(() => {
     try {
@@ -838,12 +840,49 @@ export default function App() {
       <div aria-hidden className="pointer-events-none absolute -top-40 left-1/2 h-[480px] w-[820px] -translate-x-1/2 rounded-full opacity-25 blur-3xl" style={{ background: "radial-gradient(closest-side, #164e63 0%, transparent 100%)" }} />
       <div aria-hidden className="pointer-events-none absolute bottom-0 right-0 h-[380px] w-[520px] rounded-full opacity-15 blur-3xl" style={{ background: "radial-gradient(closest-side, #881337 0%, transparent 100%)" }} />
 
-      {/* ---------- main layout ---------- */}
-      <main className="relative z-10 mx-auto grid min-h-dvh w-full max-w-6xl grid-cols-1 items-center justify-items-center gap-5 px-4 py-2 sm:px-6 lg:grid-cols-[auto_360px] lg:justify-center">
+      {/* ---------- floating controls ---------- */}
+      <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 sm:top-4 sm:right-6 sm:gap-2">
+        <button
+          onClick={() => setShowRulesModal(true)}
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-700/80 bg-[#0a1322]/90 text-slate-300 shadow-lg backdrop-blur-sm transition hover:border-cyan-400/60 hover:text-cyan-300 active:scale-95"
+          aria-label="Правила игры"
+          title="Правила игры"
+        >
+          <HelpCircle className="h-4.5 w-4.5" />
+        </button>
+        <button
+          onClick={toggleFullscreen}
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-700/80 bg-[#0a1322]/90 text-slate-300 shadow-lg backdrop-blur-sm transition hover:border-cyan-400/60 hover:text-cyan-300 active:scale-95"
+          aria-label="Полный экран"
+          title="Полный экран (F)"
+        >
+          {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        </button>
+        <button
+          onClick={() => { setMuted(m => { mutedRef.current = !m; return !m; }); }}
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-700/80 bg-[#0a1322]/90 text-slate-300 shadow-lg backdrop-blur-sm transition hover:border-cyan-400/60 hover:text-cyan-300 active:scale-95"
+          aria-label="Переключить звук"
+          title="Звук (M)"
+        >
+          {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+        </button>
+        {(screen === "playing") && (
+          <button
+            onClick={togglePause}
+            className="flex h-9 items-center gap-1.5 rounded-xl border border-slate-700/80 bg-[#0a1322]/90 px-3 text-xs font-bold text-slate-200 shadow-lg backdrop-blur-sm transition hover:border-cyan-400/60 hover:text-cyan-300 active:scale-95"
+            title="Пауза (P / Esc)"
+          >
+            <Pause className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Пауза</span>
+          </button>
+        )}
+      </div>
+
+      {/* ---------- main layout (game strictly centered) ---------- */}
+      <main className="relative z-10 mx-auto flex min-h-dvh w-full max-w-6xl items-center justify-center px-4 py-2 sm:px-6">
         {/* ===== GAME COLUMN ===== */}
         <section
           className="w-full"
-          style={{ width: "min(100%, 460px, calc((100dvh - 132px) * 420 / 720))" }}
+          style={{ width: "min(100%, 460px, calc((100dvh - 120px) * 420 / 720))" }}
         >
           {/* HUD */}
           <div className="mb-2.5 grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-2xl border border-slate-800 bg-[#0a1322]/90 px-3.5 py-2.5 shadow-[0_10px_40px_rgba(0,0,0,0.45)]">
@@ -1031,150 +1070,128 @@ export default function App() {
           </div>
 
           {/* under-table quick actions */}
-          <div className="mt-2 flex items-center justify-between gap-2">
+          <div className="mt-2 flex items-center justify-between gap-2 px-1">
             <p className="hidden items-center gap-1.5 text-xs font-semibold text-slate-500 sm:flex">
               <span className="kbd">W</span><span className="kbd">A</span><span className="kbd">S</span><span className="kbd">D</span> ход
               <span className="ml-1 kbd">P</span> пауза <span className="kbd">R</span> заново
             </p>
             <p className="text-xs font-semibold text-slate-500 sm:hidden">Ведите пальцем по столу для управления битой</p>
-            <div className="flex shrink-0 items-center gap-1.5">
-              <button
-                onClick={() => { setMuted(m => { mutedRef.current = !m; return !m; }); }}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-800 bg-[#0a1424] text-slate-300 lg:hidden"
-                aria-label="Переключить звук"
-              >
-                {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+            {screen === "playing" && (
+              <button onClick={() => startMatch()} className="flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-800 bg-[#0a1424] px-2.5 py-1.5 text-xs font-bold text-slate-300 transition hover:border-cyan-400/50 hover:text-cyan-300 active:scale-95">
+                <RotateCcw className="h-3.5 w-3.5" /> Заново
               </button>
-              {screen === "playing" && (
-                <>
-                  <button
-                    onClick={togglePause}
-                    className="flex h-8 items-center gap-1 rounded-lg border border-slate-800 bg-[#0a1424] px-2.5 text-xs font-bold text-slate-300 lg:hidden"
-                  >
-                    <Pause className="h-3.5 w-3.5" /> Пауза
-                  </button>
-                  <button onClick={() => startMatch()} className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-800 bg-[#0a1424] px-2.5 text-xs font-bold text-slate-300 transition hover:border-cyan-400/50 hover:text-cyan-300 active:scale-95">
-                    <RotateCcw className="h-3.5 w-3.5" /> Заново
-                  </button>
-                </>
-              )}
-            </div>
+            )}
           </div>
         </section>
-
-        {/* ===== SIDE PANEL (desktop) ===== */}
-        <aside className="hidden w-full max-w-[460px] flex-col gap-4 lg:flex lg:max-w-none">
-          {/* how to play */}
-          <div className="anim-rise rounded-3xl border border-slate-800 bg-[#0a1322]/90 p-5">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="font-display flex items-center gap-2 text-sm font-black tracking-[0.16em] text-white"><Swords className="h-4 w-4 text-cyan-300" /> КАК ИГРАТЬ</h3>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={toggleFullscreen}
-                  className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-700 bg-[#0b1526] text-slate-300 transition hover:border-cyan-400/60 hover:text-cyan-300 active:scale-95"
-                  aria-label="Полный экран"
-                  title="Полный экран (F)"
-                >
-                  {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-                </button>
-                <button
-                  onClick={() => { setMuted(m => { mutedRef.current = !m; return !m; }); }}
-                  className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-700 bg-[#0b1526] text-slate-300 transition hover:border-cyan-400/60 hover:text-cyan-300 active:scale-95"
-                  aria-label="Переключить звук"
-                  title="Звук (M)"
-                >
-                  {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-                </button>
-                {(screen === "playing" || screen === "paused") && (
-                  <button
-                    onClick={togglePause}
-                    className="flex h-8 items-center gap-1.5 rounded-xl border border-slate-700 bg-[#0b1526] px-2.5 text-xs font-bold text-slate-200 transition hover:border-cyan-400/60 hover:text-cyan-300 active:scale-95"
-                  >
-                    {screen === "paused" ? <Play className="h-3.5 w-3.5 fill-current" /> : <Pause className="h-3.5 w-3.5" />}
-                    <span>{screen === "paused" ? "Играть" : "Пауза"}</span>
-                  </button>
-                )}
-              </div>
-            </div>
-            <ul className="mt-3 space-y-2.5 text-[14px] font-semibold leading-snug text-slate-300">
-              <li className="flex gap-2.5"><MousePointer2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" /> <span>Двигайте мышь или ведите пальцем — бита мгновенно следует за курсором. Резкий мах придаёт ускорение шайбе.</span></li>
-              <li className="flex gap-2.5"><Keyboard className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" /> <span>Клавиатура: клавиши <span className="kbd">W</span> <span className="kbd">A</span> <span className="kbd">S</span> <span className="kbd">D</span> или стрелки.</span></li>
-              <li className="flex gap-2.5"><Target className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" /> <span>Рикошеты от бортов: бот надёжно перекрывает центр, бейте по диагоналям в углы.</span></li>
-              <li className="flex gap-2.5"><Gauge className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" /> <span>Игра до {WIN_SCORE} голов. <span className="kbd">P</span> пауза · <span className="kbd">R</span> заново · <span className="kbd">M</span> звук.</span></li>
-            </ul>
-            <div className="mt-4">
-              <p className="text-[10px] font-bold tracking-[0.22em] text-slate-500">СЛОЖНОСТЬ ДЛЯ СЛЕДУЮЩЕГО МАТЧА</p>
-              <div className="mt-2 grid grid-cols-3 gap-1 rounded-2xl border border-slate-800 bg-[#081120] p-1">
-                {(Object.keys(DIFFS) as Difficulty[]).map(d => (
-                  <button key={d} onClick={() => { diffRef.current = d; setDifficulty(d); audio.click(); }} className={`rounded-xl px-2 py-2 text-[12px] font-black tracking-wider transition active:scale-95 ${difficulty === d ? "bg-slate-100 text-slate-950" : "text-slate-400 hover:text-white"}`}>
-                    {DIFFS[d].label}
-                  </button>
-                ))}
-              </div>
-              {screen !== "playing" && (
-                <button onClick={() => startMatch()} className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-400 px-5 py-3 font-display text-sm font-black tracking-widest text-slate-950 transition hover:bg-cyan-300 active:scale-95">
-                  <Play className="h-4 w-4 fill-slate-950" /> НАЧАТЬ МАТЧ
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* stats + history */}
-          <div className="anim-rise rounded-3xl border border-slate-800 bg-[#0a1322]/90 p-5" style={{ animationDelay: "70ms" }}>
-            <div className="flex items-center justify-between">
-              <h3 className="font-display flex items-center gap-2 text-sm font-black tracking-[0.16em] text-white"><Trophy className="h-4 w-4 text-amber-300" /> СТАТИСТИКА И РЕКОРДЫ</h3>
-              {scores.length > 0 && (
-                <button onClick={() => { setScores([]); try { localStorage.removeItem(LS_KEY); } catch { /* ignore */ } }} className="flex items-center gap-1 text-[11px] font-bold text-slate-500 transition hover:text-rose-300">
-                  <Trash2 className="h-3 w-3" /> Очистить
-                </button>
-              )}
-            </div>
-            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-2xl bg-[#081120] px-2 py-3">
-                <p className="font-display text-xl font-black text-white">{scores.length}</p>
-                <p className="text-[9px] font-bold tracking-[0.18em] text-slate-500">МАТЧЕЙ</p>
-              </div>
-              <div className="rounded-2xl bg-[#081120] px-2 py-3">
-                <p className="font-display text-xl font-black text-cyan-300">{scores.length ? Math.round((wins / scores.length) * 100) : 0}%</p>
-                <p className="text-[9px] font-bold tracking-[0.18em] text-slate-500">ПОБЕД</p>
-              </div>
-              <div className="rounded-2xl bg-[#081120] px-2 py-3">
-                <p className="font-display flex items-center justify-center gap-1 text-xl font-black text-amber-300"><Flame className="h-4 w-4" />{streak}</p>
-                <p className="text-[9px] font-bold tracking-[0.18em] text-slate-500">СЕРИЯ</p>
-              </div>
-            </div>
-            {bestWin && (
-              <p className="mt-3 flex items-center gap-2 rounded-xl border border-amber-400/25 bg-amber-400/8 px-3 py-2 text-[13px] font-bold text-amber-200">
-                <Medal className="h-4 w-4 shrink-0" /> Лучшая победа: {bestWin.player}—{bestWin.ai} ({bestWin.difficulty}) · {bestWin.date}
-              </p>
-            )}
-            <div className="mt-3">
-              {scores.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-800 px-4 py-6 text-center">
-                  <Trophy className="mx-auto h-6 w-6 text-slate-600" />
-                  <p className="mt-2 text-sm font-bold text-slate-400">Матчей пока нет</p>
-                  <p className="text-xs font-semibold text-slate-500">Сыграйте матч, и результаты сохранятся здесь на вашем устройстве.</p>
-                </div>
-              ) : (
-                <ScoreTable scores={scores.slice(0, 8)} />
-              )}
-            </div>
-          </div>
-
-          <p className="px-1 text-center text-[11px] font-semibold leading-relaxed text-slate-600">
-            Подсказка: резкий короткий мах битой прямо перед касанием шайбы передаёт импульс и делает бросок максимально мощным!
-          </p>
-        </aside>
       </main>
 
-      {/* mobile history (below game, when no overlay toggle used) */}
-      {scores.length > 0 && (
-        <section className="relative z-10 mx-auto w-full max-w-[460px] px-4 pb-10 lg:hidden">
-          <div className="rounded-3xl border border-slate-800 bg-[#0a1322]/90 p-4">
-            <h3 className="font-display flex items-center gap-2 text-sm font-black tracking-[0.16em] text-white"><Trophy className="h-4 w-4 text-amber-300" /> ИСТОРИЯ МАТЧЕЙ</h3>
-            <div className="mt-3"><ScoreTable scores={scores.slice(0, 5)} compact /></div>
+      {/* ============ MODAL: RULES & STATS (HOW TO PLAY) ============ */}
+      {showRulesModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="relative flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-slate-800 bg-[#0a1424] shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-800/80 px-6 py-4">
+              <h2 className="font-display flex items-center gap-2.5 text-base font-black tracking-wider text-white">
+                <Swords className="h-5 w-5 text-cyan-300" /> ПРАВИЛА И СТАТИСТИКА
+              </h2>
+              <button
+                onClick={() => setShowRulesModal(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-800 hover:text-white"
+                aria-label="Закрыть"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5 text-slate-300">
+              {/* How to play */}
+              <div>
+                <h3 className="font-display text-xs font-black tracking-widest text-cyan-400">УПРАВЛЕНИЕ И ПРАВИЛА</h3>
+                <ul className="mt-3 space-y-2.5 text-sm font-semibold leading-relaxed text-slate-300">
+                  <li className="flex gap-2.5">
+                    <MousePointer2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" />
+                    <span><strong>Мышь и сенсор:</strong> ведите пальцем или курсором — бита мгновенно следует за вами. Резкий взмах в момент касания шайбы делает удар в разы мощнее.</span>
+                  </li>
+                  <li className="flex gap-2.5">
+                    <Keyboard className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" />
+                    <span><strong>Клавиатура:</strong> перемещение клавишами <span className="kbd">W</span> <span className="kbd">A</span> <span className="kbd">S</span> <span className="kbd">D</span> или стрелками.</span>
+                  </li>
+                  <li className="flex gap-2.5">
+                    <Target className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" />
+                    <span><strong>Тактика:</strong> бот плотно перекрывает центр ворот. Пользуйтесь бортами и посылайте шайбу рикошетом в дальние углы!</span>
+                  </li>
+                  <li className="flex gap-2.5">
+                    <Gauge className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+                    <span><strong>Горячие клавиши:</strong> <span className="kbd">P</span> — пауза, <span className="kbd">R</span> — перезапуск, <span className="kbd">M</span> — звук, <span className="kbd">F</span> — полный экран. Матч длится до {WIN_SCORE} голов.</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Stats */}
+              <div className="border-t border-slate-800/80 pt-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-display flex items-center gap-2 text-xs font-black tracking-widest text-amber-400">
+                    <Trophy className="h-4 w-4" /> ВАШИ РЕКОРДЫ
+                  </h3>
+                  {scores.length > 0 && (
+                    <button
+                      onClick={() => { setScores([]); try { localStorage.removeItem(LS_KEY); } catch { /* ignore */ } }}
+                      className="flex items-center gap-1 text-[11px] font-bold text-slate-500 transition hover:text-rose-400"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" /> Очистить
+                    </button>
+                  )}
+                </div>
+
+                <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-2xl border border-slate-800 bg-[#070e1c] px-2 py-3">
+                    <p className="font-display text-xl font-black text-white">{scores.length}</p>
+                    <p className="text-[9px] font-bold tracking-wider text-slate-500">МАТЧЕЙ</p>
+                  </div>
+                  <div className="rounded-2xl border border-slate-800 bg-[#070e1c] px-2 py-3">
+                    <p className="font-display text-xl font-black text-cyan-300">{scores.length ? Math.round((wins / scores.length) * 100) : 0}%</p>
+                    <p className="text-[9px] font-bold tracking-wider text-slate-500">ПОБЕД</p>
+                  </div>
+                  <div className="rounded-2xl border border-slate-800 bg-[#070e1c] px-2 py-3">
+                    <p className="font-display flex items-center justify-center gap-1 text-xl font-black text-amber-300">
+                      <Flame className="h-4 w-4" />{streak}
+                    </p>
+                    <p className="text-[9px] font-bold tracking-wider text-slate-500">СЕРИЯ</p>
+                  </div>
+                </div>
+
+                {bestWin && (
+                  <p className="mt-3 flex items-center gap-2 rounded-xl border border-amber-400/25 bg-amber-400/8 px-3 py-2 text-xs font-bold text-amber-200">
+                    <Medal className="h-4 w-4 shrink-0" /> Лучшая игра: {bestWin.player}—{bestWin.ai} ({bestWin.difficulty}) · {bestWin.date}
+                  </p>
+                )}
+
+                <div className="mt-3">
+                  {scores.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-slate-800/80 px-4 py-5 text-center">
+                      <Trophy className="mx-auto h-6 w-6 text-slate-600" />
+                      <p className="mt-1.5 text-xs font-bold text-slate-400">Матчей пока нет</p>
+                      <p className="text-[11px] font-semibold text-slate-500">Сыграйте матч, и результаты сохранятся здесь.</p>
+                    </div>
+                  ) : (
+                    <ScoreTable scores={scores.slice(0, 6)} />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="border-t border-slate-800/80 px-6 py-3 text-right">
+              <button
+                onClick={() => setShowRulesModal(false)}
+                className="rounded-xl bg-cyan-400 px-5 py-2 font-display text-xs font-black tracking-wider text-slate-950 transition hover:bg-cyan-300 active:scale-95"
+              >
+                ПОНЯТНО
+              </button>
+            </div>
           </div>
-        </section>
+        </div>
       )}
     </div>
   );
